@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VALTRIX - مولد الامتحانات الشامل</title>
+<style>
+    :root {
+        --bg: #020617; --card: rgba(15,23,42,.92); --ac: #00f0ff; --glow: rgba(0,240,255,.4);
+        --grad: linear-gradient(135deg, #00f0ff 0%, #0284c7 100%); --tx: #f8fafc; --mut: #94a3b8;
+        --bd: rgba(0,240,255,.3); --ok: #10b981; --warn: #f59e0b; --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    body { color: var(--tx); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 20px 12px; background: radial-gradient(circle at center, #0f172a 0%, #020617 100%); }
+    .container { width: 100%; max-width: 800px; background: var(--card); border: 1px solid var(--bd); border-radius: 24px; padding: 22px; box-shadow: 0 20px 50px rgba(0,0,0,.9), 0 0 25px var(--glow); margin-bottom: 20px; }
+    header { text-align: center; margin-bottom: 20px; border-bottom: 1px solid var(--bd); padding-bottom: 15px; }
+    header h1 { color: var(--ac); font-size: 1.8rem; font-weight: 900; letter-spacing: 1px; text-shadow: 0 0 12px var(--glow); }
+    header p { color: var(--mut); font-size: 0.85rem; margin-top: 5px; }
+    
+    .section-title { font-size: 0.9rem; color: var(--ac); margin-bottom: 8px; font-weight: bold; display: block; }
+    .panel { background: rgba(2,6,23,.6); border: 1px solid var(--bd); border-radius: 14px; padding: 15px; margin-bottom: 15px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    
+    input[type="text"], input[type="number"], input[type="file"], select { width: 100%; background: rgba(2,6,23,.95); border: 1px solid var(--bd); padding: 10px; border-radius: 8px; color: var(--tx); font-size: 0.9rem; outline: none; margin-bottom: 5px;}
+    input:focus, select:focus { border-color: var(--ac); }
+    
+    button { cursor: pointer; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
+    .btn-primary { width: 100%; background: var(--grad); color: #020617; padding: 15px; border-radius: 50px; font-size: 1.1rem; box-shadow: 0 0 20px var(--glow); margin-top: 10px; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-add { background: var(--ok); color: white; padding: 10px; border-radius: 8px; font-size: 0.9rem; width: 100%; margin-top: 5px;}
+    .btn-gen-img { background: #8b5cf6; color: white; padding: 10px; border-radius: 8px; font-size: 0.9rem; width: 100%; margin-top: 5px;}
+    .btn-merge { background: var(--warn); color: #020617; width: 100%; padding: 15px; border-radius: 50px; font-size: 1rem; margin-top: 15px; box-shadow: 0 0 15px rgba(245,158,11,0.4); }
+    
+    .status { text-align: center; font-size: 0.85rem; color: var(--ac); margin-top: 10px; font-weight: bold; min-height: 20px; line-height: 1.5; }
+    
+    .saved-box { background: rgba(0,0,0,0.3); border: 1px solid var(--ac); border-radius: 12px; padding: 10px; margin-top: 10px; max-height: 200px; overflow-y: auto; }
+    .saved-item { background: rgba(15,23,42,.8); border: 1px solid var(--bd); border-radius: 8px; padding: 8px; margin-bottom: 5px; font-size: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
+    .del-btn { background: var(--danger); color: white; padding: 4px 8px; border-radius: 5px; font-size: 0.7rem; }
+
+    /* تصميم الورقة الفخمة */
+    .output-section { display: none; width: 100%; max-width: 850px; }
+    .exam-paper { background: #fdfbf7; color: #1a1a1a; padding: 40px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; overflow: hidden; font-family: 'Traditional Arabic', 'Arial', serif; line-height: 1.8; margin-bottom: 20px; border: 2px solid #d4af37; }
+    
+    .watermark { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-35deg); font-size: 5rem; font-weight: 900; color: rgba(0, 0, 0, 0.04); white-space: nowrap; pointer-events: none; z-index: 0; font-family: 'Segoe UI', Tahoma, sans-serif; }
+    
+    .exam-header { text-align: center; border-bottom: 2px solid #d4af37; padding-bottom: 15px; margin-bottom: 25px; position: relative; z-index: 1; }
+    .exam-header h2 { font-size: 1.8rem; color: #0f172a; margin-bottom: 10px; }
+    .exam-meta { display: flex; justify-content: space-between; font-weight: bold; font-size: 1rem; color: #333; }
+    
+    .exam-body, .answers-body { position: relative; z-index: 1; font-size: 1.1rem; }
+    
+    /* تنسيق الإجابات (زي الصورة اللي بعتها) */
+    .answer-item { margin-bottom: 15px; padding: 10px; border-bottom: 1px dashed #eee; }
+    .correct-answer-badge { color: #059669; font-weight: bold; margin-right: 5px; }
+    .question-text { font-weight: bold; margin-bottom: 5px; }
+    
+    @media print {
+        body { background: white; padding: 0; }
+        .container, .output-buttons { display: none !important; }
+        .output-section { display: block !important; }
+        .exam-paper { box-shadow: none; border: none; padding: 20px; margin: 0; background: transparent; }
+        .watermark { color: rgba(0, 0, 0, 0.06); }
+        body.print-answers .exam-body { display: none !important; }
+        body.print-answers .answers-body { display: block !important; }
+        body.print-exam .answers-body { display: none !important; }
+    }
+</style>
+</head>
+<body>
+
+<div class="container" id="main-container">
+    <header>
+        <h1>مولّد الامتحانات الشامل</h1>
+        <p>نظام التوليد والدمج الذكي</p>
+    </header>
+
+    <!-- إعدادات الورقة -->
+    <div class="panel">
+        <label class="section-title">🏫 بيانات ورقة الامتحان (الترويسة)</label>
+        <div class="grid-2">
+            <div><label>اسم المادة</label><input type="text" id="m-subject" value="اللغة العربية"></div>
+            <div><label>الصف الدراسي</label><input type="text" id="m-grade" value="الثالث الإعدادي"></div>
+            <div><label>الزمن</label><input type="text" id="m-time" value="ساعتان"></div>
+            <div><label>الدرجة الكلية</label><input type="text" id="m-total" value="20 درجة"></div>
+            <div><label>العلامة المائية</label><input type="text" id="m-watermark" value="أ / أحمد السقا"></div>
+        </div>
+    </div>
+
+    <!-- رفع الصور والتوليد الفردي -->
+    <div class="panel" style="border-color: #8b5cf6;">
+        <label class="section-title" style="color: #8b5cf6;">🖼️ توليد امتحان من صورة (صورة واحدة في كل مرة)</label>
+        <input type="file" id="single-image" accept="image/*" onchange="handleSingleImage(event)" style="border:1px solid #8b5cf6;">
+        <div class="grid-2">
+            <div>
+                <select id="single-q-type">
+                    <option value="تجميعة متكاملة">تجميعة متكاملة</option>
+                    <option value="اختيار من متعدد">اختيار من متعدد</option>
+                    <option value="صح وخطأ">صح وخطأ</option>
+                    <option value="مقالي">مقالي</option>
+                </select>
+            </div>
+            <div>
+                <input type="number" id="single-count" value="5" min="1" max="20" placeholder="عدد الأسئلة">
+            </div>
+        </div>
+        <button class="btn-gen-img" onclick="generateSingleImageExam()">⚡ توليد امتحان هذه الصورة</button>
+        
+        <!-- صندوق الامتحانات المولدة من الصور -->
+        <div id="ai-saved-area" style="display:none; margin-top:10px;">
+            <label class="section-title" style="font-size:0.8rem; color: var(--warn);">الامتحانات المولدة من الصور (<span id="ai-count">0</span>):</label>
+            <div class="saved-box" id="ai-saved-list" style="border-color: var(--warn);"></div>
+        </div>
+    </div>
+
+    <!-- زر الدمج النهائي -->
+    <div class="panel" style="border-color: var(--warn);">
+        <label class="section-title" style="color: var(--warn);">🔀 تجميع ودمج الامتحانات</label>
+        <p style="font-size:0.8rem; color:var(--mut); margin-bottom:10px;">سيتم دمج كل الأسئلة (التي تم توليدها من الصور) وخلطها عشوائياً.</p>
+        <button class="btn-merge" onclick="mergeAndShuffle()">🖨️ دمج وخلط كل الأسئلة في ورقة واحدة</button>
+        <div class="status" id="merge-status"></div>
+    </div>
+</div>
+
+<!-- قسم ورقة الامتحان النهائية -->
+<div class="output-section" id="output-area">
+    <div class="exam-paper" id="exam-paper">
+        <div class="watermark" id="watermark-text">أ / أحمد السقا</div>
+        
+        <div class="exam-header">
+            <h2 id="out-subject">امتحان اللغة العربية</h2>
+            <div class="exam-meta">
+                <span>الصف: <span id="out-grade"></span></span>
+                <span>الزمن: <span id="out-time"></span></span>
+                <span>الدرجة: <span id="out-total"></span></span>
+            </div>
+        </div>
+        
+        <div class="exam-body" id="out-exam-body"></div>
+
+        <div class="answers-body" id="out-answers-body" style="display:none; margin-top:40px; border-top:2px dashed #ccc; padding-top:20px;">
+            <h3 style="text-align:center; margin-bottom:15px; color:#b91c1c;">نموذج الإجابة</h3>
+            <div id="out-answers-content"></div>
+        </div>
+    </div>
+    
+    <div class="output-buttons" style="display:flex; gap:10px; margin-bottom:40px;">
+        <button class="btn-primary" style="background:var(--ok); color:white;" onclick="printExam(false)">🖨️ طباعة الامتحان فقط</button>
+        <button class="btn-primary" style="background:#0284c7;" onclick="printExam(true)">🔑 طباعة نموذج الإجابة</button>
+    </div>
+</div>
+
+<script>
+    // ⚠️ المفتاح الخاص بك
+    const GROQ_KEY = "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";
+    const API_URL = "https://api.groq.com/openai/v1/chat/completions";
+    const MODEL = "qwen/qwen3.8-27b";
+    const SEP = "===ANSWERS===";
+
+    let aiExams = []; // الامتحانات المولدة من الصور
+    let currentSingleImage = null;
+    const $ = id => document.getElementById(id);
+
+    // ضغط صورة
+    function compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const max = 800;
+                    let w = img.width, h = img.height;
+                    if (w > h && w > max) { h *= max / w; w = max; }
+                    else if (h > max) { w *= max / h; h = max; }
+                    canvas.width = w; canvas.height = h;
+                    ctx.drawImage(img, 0, 0, w, h);
+                    resolve(canvas.toDataURL('image/jpeg', 0.6));
+                };
+                img.src = e.target.result;
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function handleSingleImage(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        $('merge-status').innerText = "جاري تجهيز الصورة...";
+        try {
+            currentSingleImage = await compressImage(file);
+            $('merge-status').innerText = "✅ الصورة جاهزة. اضغط 'توليد'.";
+        } catch (e) {
+            $('merge-status').innerText = "❌ خطأ في تجهيز الصورة.";
+        }
+    }
+
+    async function callGroq(messagesList, maxTokens) {
+        for (let attempt = 0; attempt < 5; attempt++) {
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${GROQ_KEY}` },
+                    body: JSON.stringify({ model: MODEL, messages: messagesList, temperature: 0.1, max_tokens: maxTokens })
+                });
+
+                if (!res.ok) {
+                    const errTxt = await res.text();
+                    let waitTime = 15;
+                    try {
+                        const errObj = JSON.parse(errTxt);
+                        if (res.status === 429) {
+                            const match = errObj.error?.message?.match(/try again in ([\d.]+)s/);
+                            if (match) waitTime = Math.ceil(parseFloat(match[1])) + 3;
+                        }
+                    } catch (e) {}
+                    
+                    if (res.status === 429) {
+                        $('merge-status').innerText = `⏳ وصلنا للحد الأقصى. جاري الانتظار ${waitTime} ثانية...`;
+                        await new Promise(r => setTimeout(r, waitTime * 1000));
+                        continue;
+                    }
+                    throw new Error("API Error: " + errTxt);
+                }
+
+                const data = await res.json();
+                return data.choices[0].message.content;
+            } catch (e) {
+                if (attempt === 4) throw e;
+                await new Promise(r => setTimeout(r, 3000));
+            }
+        }
+    }
+
+    // توليد امتحان من صورة واحدة
+    async function generateSingleImageExam() {
+        if (!currentSingleImage) { alert("الرجاء رفع صورة أولاً."); return; }
+        
+        const count = parseInt($('single-count').value) || 5;
+        let type = $('single-q-type').value;
+        
+        $('merge-status').innerText = "⏳ جاري تحليل الصورة وتوليد الامتحان...";
+        
+        let typeInstruction = "";
+        if (type === 'تجميعة متكاملة') {
+            typeInstruction = `مطلوب تنويع الأسئلة كالتالي:
+            - أول ثلث الأسئلة: اختيار من متعدد (أ، ب، ج، د).
+            - ثلث الأسئلة الثاني: صح وخطأ.
+            - ثلث الأسئلة الأخير: مقالي قصير.`;
+        } else {
+            typeInstruction = `نمط الأسئلة المطلوب: ${type} فقط.`;
+        }
+
+        // البرومبت الجديد: بنطلب منه يرجع البيانات في صيغة محددة جداً
+        const prompt = `أنت معلم خبير. اقرأ النص الموجود في هذه الصورة فقط.
+        المطلوب: استخرج منه امتحاناً.
+        ${typeInstruction}
+        - إجمالي عدد الأسئلة: ${count} بالضبط.
+        
+        تحذيرات صارمة (يجب تنفيذها حرفياً):
+        1. ممنوع تماماً كتابة أي ترويسة (اسم مادة، صف، زمن).
+        2. ابدأ مباشرة بكتابة "السؤال 1:".
+        3. **اعتمد فقط على الكلمات والنصوص الموجودة في الصورة**. ممنوع منعاً باتاً تأليف أي كلمات أو أسماء غير موجودة في النص الأصلي. 
+        4. لو الصورة مش واضحة أو فيها كلام قليل، اكتفي بالسؤال الموجود ومتألفش أسئلة من عندك.
+        
+        اكتب الأسئلة، ثم ضع السطر التالي بالضبط:
+        ${SEP}
+        ثم اكتب نموذج الإجابة.
+        
+        **هام جداً في نموذج الإجابة:** استخدم صيغة HTML بسيطة جداً لتنسيق الإجابة، بحيث يكون شكلها كالتالي:
+        <div class="answer-item">
+        <div class="question-text">السؤال 1: [نص السؤال]</div>
+        <div class="correct-answer"><span class="correct-answer-badge">✔ الإجابة الصحيحة:</span> [نص الإجابة]</div>
+        </div>
+        كرر هذا الشكل لكل سؤال. لا تضف أي كود CSS، فقط استخدم الكلاسات (class) دي عشان الكود بتاعي ينسقها.`;
+
+        const contentArray = [
+            { type: "text", text: prompt },
+            { type: "image_url", image_url: { url: currentSingleImage } }
+        ];
+
+        try {
+            const resp = await callGroq([{ role: "user", content: contentArray }], 3500);
+            const full = resp.replace(/<think>[\s\S]*?<\/think>/g, '').trim();
+            
+            let exam = full, answers = "";
+            const idx = full.indexOf(SEP);
+            if (idx !== -1) {
+                exam = full.slice(0, idx).trim();
+                answers = full.slice(idx + SEP.length).trim();
+            }
+
+            // حفظ الامتحان في المصفوفة
+            aiExams.push({ exam, answers, type });
+            renderAiExams();
+            
+            // تصفير
+            currentSingleImage = null;
+            $('single-image').value = '';
+            $('merge-status').innerText = "✅ تم التوليد! ارفع صورة تانية أو اضغط 'دمج'.";
+            
+        } catch (error) {
+            console.error(error);
+            $('merge-status').innerText = "❌ فشل التوليد: " + error.message;
+        }
+    }
+
+    function renderAiExams() {
+        const list = $('ai-saved-list');
+        const area = $('ai-saved-area');
+        list.innerHTML = '';
+        if (aiExams.length === 0) { area.style.display = 'none'; return; }
+        area.style.display = 'block';
+        $('ai-count').innerText = aiExams.length;
+        
+        aiExams.forEach((item, i) => {
+            const div = document.createElement('div');
+            div.className = 'saved-item';
+            const preview = item.exam.substring(0, 50) + "...";
+            div.innerHTML = `<div><b>صورة ${i+1}:</b> ${preview}</div>
+                             <button class="del-btn" onclick="deleteAiExam(${i})">حذف</button>`;
+            list.appendChild(div);
+        });
+    }
+
+    function deleteAiExam(index) {
+        aiExams.splice(index, 1);
+        renderAiExams();
+    }
+
+    // الدمج والخلط النهائي
+    function mergeAndShuffle() {
+        if (aiExams.length === 0) {
+            alert("لا توجد أسئلة لدمجها."); return;
+        }
+
+        // 1. تجميع كل النصوص
+        let allExamText = "";
+        let allAnswersText = "";
+
+        aiExams.forEach(ai => {
+            allExamText += ai.exam + "\n\n";
+            allAnswersText += ai.answers + "\n\n";
+        });
+
+        // 2. الخلط البرمجي
+        const splitRegex = /(?=(?:السؤال\s*\d+|\d+[\.\-]\s))/g;
+        
+        let examParts = allExamText.split(splitRegex).filter(p => p.trim().length > 5);
+        // الإجابات هنا جاية بصيغة HTML، فهنقسمها بناءً على كلاسات معينة
+        let answerParts = allAnswersText.split(/(?=<div class="answer-item">)/g).filter(p => p.trim().length > 5);
+
+        const shuffle = (arr) => {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        };
+
+        // خلط متزامن لو العددين متساويين
+        if (examParts.length === answerParts.length) {
+            let indices = Array.from(Array(examParts.length).keys());
+            indices = shuffle(indices);
+            
+            let shuffledExams = [];
+            let shuffledAnswers = [];
+            indices.forEach(idx => {
+                shuffledExams.push(examParts[idx]);
+                shuffledAnswers.push(answerParts[idx]);
+            });
+            examParts = shuffledExams;
+            answerParts = shuffledAnswers;
+        } else {
+            examParts = shuffle(examParts);
+            answerParts = shuffle(answerParts);
+        }
+
+        // 3. تجميع النص النهائي
+        let finalExamHtml = "";
+        examParts.forEach((part, i) => {
+            // بنشيل الترقيم القديم ونحط ترقيم جديد
+            let cleanPart = part.replace(/^(?:السؤال\s*\d+|\d+[\.\-])\s*/, '');
+            finalExamHtml += `<div style="margin-bottom:15px;"><b>السؤال ${i+1}:</b> ${cleanPart}</div>`;
+        });
+
+        let finalAnswersHtml = "";
+        answerParts.forEach((part, i) => {
+            // الإجابة جاية بشكل HTML جاهز من الموديل
+            finalAnswersHtml += part;
+        });
+
+        // عرض الترويسة
+        $('out-subject').innerText = "امتحان " + $('m-subject').value;
+        $('out-grade').innerText = $('m-grade').value;
+        $('out-time').innerText = $('m-time').value;
+        $('out-total').innerText = $('m-total').value;
+        $('watermark-text').innerText = $('m-watermark').value || 'أ / أحمد السقا';
+
+        // عرض المحتوى
+        $('out-exam-body').innerHTML = finalExamHtml;
+        $('out-answers-content').innerHTML = finalAnswersHtml;
+        
+        $('main-container').style.display = 'none';
+        $('output-area').style.display = 'block';
+    }
+
+    function printExam(isAnswers) {
+        document.body.classList.remove('print-exam', 'print-answers');
+        if (isAnswers) {
+            $('out-answers-body').style.display = 'block';
+            $('out-exam-body').style.display = 'none';
+            document.body.classList.add('print-answers');
+        } else {
+            $('out-answers-body').style.display = 'none';
+            $('out-exam-body').style.display = 'block';
+            document.body.classList.add('print-exam');
+        }
+        window.print();
+        setTimeout(() => {
+            $('out-answers-body').style.display = 'none';
+            $('out-exam-body').style.display = 'block';
+        }, 500);
+    }
+</script>
+</body>
+</html>
